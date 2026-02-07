@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรแกรมคำนวณราคาไม้สัก - สวนป่าหวังมนตรี</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Prompt', 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c28 50%, #6b9440 100%);
+            min-height: 100vh;
+            padding: 15px;
+            position: relative;
+        }
+
+        /* Background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.03) 35px, rgba(255,255,255,.03) 70px);
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.2);
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c28 100%);
+            color: white;
+            padding: 30px 25px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '🌳';
+            position: absolute;
+            font-size: 180px;
+            opacity: 0.1;
+            top: -40px;
+            right: -30px;
+            transform: rotate(-15deg);
+        }
+
+        .header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            position: relative;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            opacity: 0.95;
+        }
+
+        .header .info {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 30px 25px;
+        }
+
+        .input-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            color: #2d5016;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        label .icon {
+            margin-right: 6px;
+            font-size: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: 'Prompt', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4a7c28;
+            box-shadow: 0 0 0 4px rgba(74, 124, 40, 0.1);
+            transform: translateY(-1px);
+        }
+
+        input[readonly] {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            cursor: not-allowed;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .input-hint {
+            display: flex;
+            align-items: center;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #6c757d;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #4a7c28;
+        }
+
+        .input-hint .hint-icon {
+            margin-right: 6px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Prompt', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-calculate {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c28 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(74, 124, 40, 0.3);
+            grid-column: 1 / -1;
+        }
+
+        .btn-calculate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 124, 40, 0.4);
+        }
+
+        .btn-calculate:active {
+            transform: translateY(0);
+        }
+
+        .btn-reset {
+            background: white;
+            color: #6c757d;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-reset:hover {
+            border-color: #4a7c28;
+            color: #4a7c28;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+        }
+
+        /* Loading animation */
+        .calculating {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .calculating::after {
+            content: '⏳';
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 0;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 16px;
+            display: none;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-header {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c28 100%);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-body {
+            padding: 20px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+            margin-top: 12px;
+            padding-top: 18px;
+            border-top: 3px solid #2d5016;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff5cc 100%);
+            margin-left: -20px;
+            margin-right: -20px;
+            margin-bottom: -20px;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 20px;
+        }
+
+        .result-label {
+            color: #495057;
+            font-weight: 400;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .result-value {
+            color: #2d5016;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .result-item:last-child .result-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d5016;
+        }
+
+        .result-item:last-child .result-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2d5016;
+        }
+
+        .note {
+            margin-top: 25px;
+            padding: 18px;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff5cc 100%);
+            border-left: 4px solid #ffc107;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .note strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #2d5016;
+            font-size: 14px;
+        }
+
+        .note ul {
+            margin-left: 18px;
+            margin-top: 8px;
+        }
+
+        .note li {
+            margin-bottom: 4px;
+        }
+
+        /* History section */
+        .history {
+            margin-top: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            border: 2px solid #e0e0e0;
+            display: none;
+        }
+
+        .history.show {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .history-title {
+            font-weight: 600;
+            color: #2d5016;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-clear {
+            color: #dc3545;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .history-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            border-left: 3px solid #4a7c28;
+        }
+
+        .history-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 20px;
+            }
+
+            .content {
+                padding: 25px 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .header .subtitle {
+                font-size: 15px;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .button-group, .note, .history, .footer {
+                display: none !important;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>โปรแกรมคำนวณราคาไม้สัก</h1>
+            <p class="subtitle">สวนป่าหวังมนตรี จ.กาฬสินธุ์</p>
+            <p class="info">ตามตารางราคาองค์การอุตสาหกรรมป่าไม้ (มกราคม 2560)</p>
+        </div>
+
+        <div class="content">
+            <div class="input-group">
+                <label><span class="icon">📏</span> ความโตกลางท่อน (ซม.)</label>
+                <input type="number" id="diameter" placeholder="30" min="1" step="0.1" oninput="autoCalculate()" inputmode="decimal">
+                <div class="input-hint">
+                    <span class="hint-icon">💡</span>
+                    วัดด้วยสายวัดพันรอบกลางท่อนไม้
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="icon">📐</span> ความยาวของท่อน (เมตร)</label>
+                <input type="number" id="length" placeholder="6.0" min="0.5" max="25" step="0.5" oninput="autoCalculate()" inputmode="decimal">
+                <div class="input-hint">
+                    <span class="hint-icon">📐</span>
+                    ระบุความยาว 0.5 - 25 เมตร
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="icon">📦</span> ปริมาตร (ลูกบาศก์เมตร)</label>
+                <input type="number" id="volume" placeholder="คำนวณอัตโนมัติ" step="0.000001" readonly>
+                <div class="input-hint">
+                    <span class="hint-icon">🧮</span>
+                    V = 0.00000796 × ความโต² × ความยาว
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label><span class="icon">🎯</span> ส่วนลด (%)</label>
+                <input type="number" id="discount" placeholder="0" min="0" max="100" step="0.1" value="0" inputmode="decimal">
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-calculate" onclick="calculatePrice()">
+                    <span>💰</span> คำนวณราคา
+                </button>
+                <button class="btn btn-reset" onclick="resetForm()">
+                    <span>🔄</span> รีเซ็ต
+                </button>
+                <button class="btn btn-print" onclick="printResult()">
+                    <span>🖨️</span> ปริ้นท์
+                </button>
+            </div>
+
+            <div class="result" id="result">
+                <div class="result-header">
+                    <span>📊</span> ผลการคำนวณ
+                </div>
+                <div class="result-body">
+                    <div class="result-item">
+                        <span class="result-label"><span>📏</span> ความโตกลางท่อน:</span>
+                        <span class="result-value" id="resultDiameter">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><span>📐</span> ความยาว:</span>
+                        <span class="result-value" id="resultLength">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><span>📊</span> ช่วงความยาวในตาราง:</span>
+                        <span class="result-value" id="resultLengthRange">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><span>📦</span> ปริมาตร:</span>
+                        <span class="result-value" id="resultVolume">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><span>💵</span> ราคาต่อหน่วย:</span>
+                        <span class="result-value" id="resultUnitPrice">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><span>💰</span> ราคารวม (ก่อนส่วนลด):</span>
+                        <span class="result-value" id="resultSubtotal">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><span>🎯</span> ส่วนลด:</span>
+                        <span class="result-value" id="resultDiscount">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label"><span>✨</span> ราคาสุดท้าย (ไม่รวม VAT):</span>
+                        <span class="result-value" id="resultTotal">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="history" id="history">
+                <div class="history-header">
+                    <span class="history-title"><span>📝</span> ประวัติการคำนวณ</span>
+                    <span class="history-clear" onclick="clearHistory()">ลบทั้งหมด</span>
+                </div>
+                <div id="historyList"></div>
+            </div>
+
+            <div class="note">
+                <strong>📌 หมายเหตุ:</strong>
+                <ul>
+                    <li>ราคานี้ยังไม่รวมภาษีมูลค่าเพิ่ม (VAT 7%)</li>
+                    <li>ราคาคำนวณจาก: ราคาต่อ ลบ.ม. × ปริมาตร</li>
+                    <li>เป็นราคา ณ หมอนไม้สวนป่า</li>
+                    <li>ความโตกลางท่อนขั้นต่ำ 30 ซม.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        สวนป่าหวังมนตรี จังหวัดกาฬสินธุ์
+    </div>
+
+    <script>
+        // ตารางราคาไม้สัก (บาท/ลบ.ม.)
+        const priceTable = {
+            '30-34': [2900, 3300, 3800, 4100],
+            '35-39': [3300, 3700, 4200, 4600],
+            '40-44': [3800, 4500, 5100, 5700],
+            '45-49': [4300, 5400, 6200, 6700],
+            '50-54': [5100, 6600, 7600, 8300],
+            '55-59': [5900, 7700, 8900, 9600],
+            '60-64': [6700, 8900, 10200, 11000],
+            '64-69': [7800, 10200, 11400, 12400],
+            '70-74': [9000, 11400, 12900, 13900],
+            '75-79': [10200, 12800, 14200, 15400],
+            '80-84': [11400, 14100, 15600, 16900],
+            '85-89': [12800, 15500, 16900, 18600],
+            '90-94': [13900, 16800, 18500, 20200],
+            '95-99': [15200, 18400, 20000, 22000],
+            '100-109': [16700, 20500, 22100, 24100],
+            '110-119': [18400, 22200, 24000, 26000],
+            '120-129': [20000, 24100, 26000, 28000],
+            '130-139': [21700, 26300, 28300, 30400],
+            '140-149': [23400, 28800, 30800, 32800],
+            '150-159': [25700, 31700, 33900, 36100],
+            '160-169': [28300, 34800, 37300, 39700],
+            '170-179': [31200, 38300, 41000, 43700],
+            '180-189': [34300, 42100, 45100, 48000],
+            '190-199': [37700, 46400, 49600, 52900],
+            '200+': [41500, 51000, 54600, 58100]
+        };
+
+        const lengthNames = [
+            'ต่ำกว่า 2 เมตร',
+            '2 - ต่ำกว่า 4 เมตร',
+            '4 - ต่ำกว่า 6 เมตร',
+            '6 เมตรขึ้นไป'
+        ];
+
+        // Load history from localStorage
+        let history = JSON.parse(localStorage.getItem('teakHistory') || '[]');
+
+        function autoCalculate() {
+            const diameter = parseFloat(document.getElementById('diameter').value);
+            const length = parseFloat(document.getElementById('length').value);
+            
+            if (diameter && length && !isNaN(diameter) && !isNaN(length) && diameter > 0 && length > 0) {
+                const volume = 0.00000796 * Math.pow(diameter, 2) * length;
+                document.getElementById('volume').value = volume.toFixed(6);
+            } else {
+                document.getElementById('volume').value = '';
+            }
+        }
+
+        function getDiameterRange(diameter) {
+            if (diameter < 30) return null;
+            if (diameter >= 200) return '200+';
+            
+            const ranges = Object.keys(priceTable);
+            for (let range of ranges) {
+                if (range === '200+') continue;
+                const [min, max] = range.split('-').map(Number);
+                if (diameter >= min && diameter <= max) {
+                    return range;
+                }
+            }
+            return null;
+        }
+
+        function getLengthRangeIndex(length) {
+            if (length < 2) return 0;
+            if (length >= 2 && length < 4) return 1;
+            if (length >= 4 && length < 6) return 2;
+            if (length >= 6) return 3;
+            return null;
+        }
+
+        function calculatePrice() {
+            const btn = document.querySelector('.btn-calculate');
+            btn.classList.add('calculating');
+
+            setTimeout(() => {
+                const diameter = parseFloat(document.getElementById('diameter').value);
+                const length = parseFloat(document.getElementById('length').value);
+                const volume = parseFloat(document.getElementById('volume').value);
+                const discount = parseFloat(document.getElementById('discount').value) || 0;
+
+                // Validation
+                if (!diameter || isNaN(diameter) || diameter <= 0) {
+                    alert('กรุณาใส่ความโตกลางท่อน');
+                    btn.classList.remove('calculating');
+                    return;
+                }
+
+                if (!length || isNaN(length) || length <= 0) {
+                    alert('กรุณาใส่ความยาวของท่อน');
+                    btn.classList.remove('calculating');
+                    return;
+                }
+
+                if (length < 0.5 || length > 25) {
+                    alert('ความยาวต้องอยู่ระหว่าง 0.5-25 เมตร');
+                    btn.classList.remove('calculating');
+                    return;
+                }
+
+                if (!volume || isNaN(volume) || volume <= 0) {
+                    alert('ไม่สามารถคำนวณปริมาตรได้ กรุณาตรวจสอบค่าที่ใส่');
+                    btn.classList.remove('calculating');
+                    return;
+                }
+
+                if (discount < 0 || discount > 100) {
+                    alert('ส่วนลดต้องอยู่ระหว่าง 0-100 %');
+                    btn.classList.remove('calculating');
+                    return;
+                }
+
+                const diameterRange = getDiameterRange(diameter);
+                if (!diameterRange) {
+                    alert(`ความโต ${diameter.toFixed(2)} ซม. ต่ำกว่า 30 ซม. - ไม่อยู่ในตารางราคามาตรฐาน`);
+                    btn.classList.remove('calculating');
+                    return;
+                }
+
+                const lengthRangeIndex = getLengthRangeIndex(length);
+                if (lengthRangeIndex === null) {
+                    alert('ไม่สามารถระบุช่วงความยาวได้');
+                    btn.classList.remove('calculating');
+                    return;
+                }
+
+                const pricePerUnit = priceTable[diameterRange][lengthRangeIndex];
+                const subtotal = pricePerUnit * volume;
+                const discountAmount = subtotal * (discount / 100);
+                const finalPrice = subtotal - discountAmount;
+
+                // Display results
+                document.getElementById('resultDiameter').textContent = `${diameter} ซม. (ช่วง ${diameterRange} ซม.)`;
+                document.getElementById('resultLength').textContent = `${length} เมตร`;
+                document.getElementById('resultLengthRange').textContent = lengthNames[lengthRangeIndex];
+                document.getElementById('resultVolume').textContent = `${volume.toFixed(6)} ลบ.ม.`;
+                document.getElementById('resultUnitPrice').textContent = `${pricePerUnit.toLocaleString('th-TH')} บาท/ลบ.ม.`;
+                document.getElementById('resultSubtotal').textContent = `${subtotal.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท`;
+                document.getElementById('resultDiscount').textContent = `${discount}% (-${discountAmount.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท)`;
+                document.getElementById('resultTotal').textContent = `${finalPrice.toLocaleString('th-TH', {minimumFractionDigits: 2, maximumFractionDigits: 2})} บาท`;
+
+                // Show result
+                const resultDiv = document.getElementById('result');
+                resultDiv.classList.add('show');
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                // Add to history
+                addToHistory({
+                    diameter,
+                    length,
+                    volume,
+                    discount,
+                    finalPrice,
+                    timestamp: new Date().toLocaleString('th-TH')
+                });
+
+                btn.classList.remove('calculating');
+            }, 500);
+        }
+
+        function resetForm() {
+            document.getElementById('diameter').value = '';
+            document.getElementById('length').value = '';
+            document.getElementById('volume').value = '';
+            document.getElementById('discount').value = '0';
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('diameter').focus();
+        }
+
+        function printResult() {
+            window.print();
+        }
+
+        function addToHistory(item) {
+            history.unshift(item);
+            if (history.length > 10) history = history.slice(0, 10);
+            localStorage.setItem('teakHistory', JSON.stringify(history));
+            displayHistory();
+        }
+
+        function displayHistory() {
+            const historyDiv = document.getElementById('history');
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyDiv.classList.remove('show');
+                return;
+            }
+
+            historyDiv.classList.add('show');
+            historyList.innerHTML = history.map((item, index) => `
+                <div class="history-item">
+                    <strong>${item.timestamp}</strong><br>
+                    ความโต: ${item.diameter} ซม. | ยาว: ${item.length} ม. | ปริมาตร: ${item.volume.toFixed(4)} ลบ.ม.<br>
+                    <strong>ราคา: ${item.finalPrice.toLocaleString('th-TH', {minimumFractionDigits: 2})} บาท</strong>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            if (confirm('ต้องการลบประวัติการคำนวณทั้งหมดใช่หรือไม่?')) {
+                history = [];
+                localStorage.removeItem('teakHistory');
+                displayHistory();
+            }
+        }
+
+        // Display history on load
+        displayHistory();
+
+        // Allow Enter key to calculate
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                calculatePrice();
+            }
+        });
+    </script>
+</body>
+</html>
